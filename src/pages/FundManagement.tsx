@@ -2,8 +2,9 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, X, Wallet } from "lucide-react";
+import { Check, X, Wallet, Save } from "lucide-react";
 import StatCard from "@/components/StatCard";
+import { toast } from "@/hooks/use-toast";
 
 const members = ["สมชาย", "สมหญิง", "สมศักดิ์", "สมใจ", "สมปอง"];
 const months = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย."];
@@ -26,12 +27,24 @@ const history = [
 
 export default function FundManagement() {
   const [payments, setPayments] = useState(initialPayments);
+  const [savedPayments, setSavedPayments] = useState(initialPayments);
+  const [hasChanges, setHasChanges] = useState(false);
 
   const togglePayment = (member: string, month: string) => {
-    setPayments(prev => ({
-      ...prev,
-      [member]: { ...prev[member], [month]: !prev[member]?.[month] },
-    }));
+    setPayments(prev => {
+      const updated = {
+        ...prev,
+        [member]: { ...prev[member], [month]: !prev[member]?.[month] },
+      };
+      setHasChanges(JSON.stringify(updated) !== JSON.stringify(savedPayments));
+      return updated;
+    });
+  };
+
+  const handleSave = () => {
+    setSavedPayments({ ...payments });
+    setHasChanges(false);
+    toast({ title: "บันทึกสำเร็จ", description: "บันทึกข้อมูลการนำส่งเงินเรียบร้อยแล้ว" });
   };
 
   return (
@@ -49,8 +62,11 @@ export default function FundManagement() {
 
       {/* Monthly checklist */}
       <Card className="shadow-card border-0">
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="font-heading text-lg">ตารางนำส่งเงินรายเดือน (100 ฿/คน)</CardTitle>
+          <Button onClick={handleSave} disabled={!hasChanges} className="gap-2">
+            <Save className="w-4 h-4" /> บันทึก
+          </Button>
         </CardHeader>
         <CardContent className="overflow-x-auto">
           <table className="w-full min-w-[500px]">

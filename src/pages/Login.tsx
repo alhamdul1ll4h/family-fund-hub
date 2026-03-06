@@ -5,9 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Wallet, Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { useAuth } from "@/components/AppLayout";
+import { toast } from "@/hooks/use-toast";
 
 export default function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
@@ -16,7 +19,21 @@ export default function Login() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Mock login — will be replaced with real auth
+    if (!email || !password) {
+      toast({ title: "กรุณากรอกข้อมูลให้ครบ", variant: "destructive" });
+      return;
+    }
+    if (!isLogin && !name) {
+      toast({ title: "กรุณากรอกชื่อ-นามสกุล", variant: "destructive" });
+      return;
+    }
+    // Mock login - treat first user as admin
+    login({
+      name: name || email.split("@")[0],
+      email,
+      role: "admin",
+    });
+    toast({ title: isLogin ? "เข้าสู่ระบบสำเร็จ" : "สมัครสมาชิกสำเร็จ" });
     navigate("/dashboard");
   };
 
